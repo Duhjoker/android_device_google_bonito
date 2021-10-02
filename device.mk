@@ -16,69 +16,44 @@
 
 TARGET_CHIPSET := sdm710
 
-PRODUCT_SOONG_NAMESPACES += \
-    device/google/bonito \
-    hardware/google/av \
-    hardware/google/camera \
-    hardware/google/interfaces \
-    hardware/google/pixel \
-    hardware/qcom/sdm845 \
-    vendor/google/camera \
-    vendor/qcom/sdm845 \
-    vendor/google/interfaces
-
 PRODUCT_PROPERTY_OVERRIDES += \
     keyguard.no_require_sim=true
 
-PRODUCT_PROPERTY_OVERRIDES += ro.crypto.volume.filenames_mode=aes-256-cts
-
 # enable cal by default on accel sensor
-PRODUCT_PRODUCT_PROPERTIES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     persist.debug.sensors.accel_cal=1
 
 # The default value of this variable is false and should only be set to true when
 # the device allows users to retain eSIM profiles after factory reset of user data.
-PRODUCT_PRODUCT_PROPERTIES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     masterclear.allow_retain_esim_profiles_after_fdr=true
 
 PRODUCT_COPY_FILES += \
     device/google/bonito/default-permissions.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default-permissions/default-permissions.xml \
-    device/google/bonito/component-overrides.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/component-overrides.xml \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
-    frameworks/native/data/etc/android.software.verified_boot.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/android.software.verified_boot.xml
+    frameworks/native/data/etc/android.software.verified_boot.xml:system/etc/permissions/android.software.verified_boot.xml
 
 # Enforce privapp-permissions whitelist
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.control_privapp_permissions=enforce
+PRODUCT_COPY_FILES += \
+    device/google/bonito/permissions/privapp-permissions-aosp.xml:system/etc/permissions/privapp-permissions-aosp.xml
 
 # Enable on-access verification of priv apps. This requires fs-verity support in kernel.
-PRODUCT_PROPERTY_OVERRIDES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     ro.apk_verity.mode=1
 
 PRODUCT_PACKAGES += \
     messaging
 
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-PRODUCT_PACKAGES += chre_test_client
-endif
-
 LOCAL_PATH := device/google/bonito
 
-TARGET_PRODUCT_PROP := $(LOCAL_PATH)/product.prop
+TARGET_SYSTEM_PROP := $(LOCAL_PATH)/system.prop
 
 $(call inherit-product, $(LOCAL_PATH)/utils.mk)
 
-# Installs gsi keys into ramdisk, to boot a developer GSI with verified boot.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/developer_gsi_keys.mk)
-
 ifeq ($(wildcard vendor/google_devices/bonito/proprietary/device-vendor-bonito.mk),)
     BUILD_WITHOUT_VENDOR := true
-endif
-
-ifeq ($(TARGET_PREBUILT_KERNEL),)
-    LOCAL_KERNEL := device/google/bonito-kernel/Image.lz4
-else
-    LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
 endif
 
 PRODUCT_CHARACTERISTICS := nosdcard
@@ -87,15 +62,14 @@ PRODUCT_SHIPPING_API_LEVEL := 28
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
 PRODUCT_COPY_FILES += \
-    $(LOCAL_KERNEL):kernel \
-    $(LOCAL_PATH)/init.recovery.hardware.rc:recovery/root/init.recovery.$(PRODUCT_PLATFORM).rc \
+    $(LOCAL_PATH)/init.recovery.hardware.rc:root/init.recovery.$(PRODUCT_PLATFORM).rc \
     $(LOCAL_PATH)/init.hardware.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.$(PRODUCT_PLATFORM).rc \
     $(LOCAL_PATH)/init.hardware.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.$(PRODUCT_PLATFORM).usb.rc \
     $(LOCAL_PATH)/ueventd.hardware.rc:$(TARGET_COPY_OUT_VENDOR)/ueventd.rc \
     $(LOCAL_PATH)/init.power.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.$(PRODUCT_PLATFORM).power.rc \
     $(LOCAL_PATH)/init.radio.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.radio.sh \
-    $(LOCAL_PATH)/uinput-fpc.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/uinput-fpc.kl \
-    $(LOCAL_PATH)/uinput-fpc.idc:$(TARGET_COPY_OUT_VENDOR)/usr/idc/uinput-fpc.idc \
+    $(LOCAL_PATH)/uinput-fpc.kl:system/usr/keylayout/uinput-fpc.kl \
+    $(LOCAL_PATH)/uinput-fpc.idc:system/usr/idc/uinput-fpc.idc \
     $(LOCAL_PATH)/init.qcom.devstart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.devstart.sh \
     $(LOCAL_PATH)/init.qcom.ipastart.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.ipastart.sh \
     $(LOCAL_PATH)/init.qcom.wlan.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.qcom.wlan.sh \
@@ -128,8 +102,9 @@ endif
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/bonito/init.bonito.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.bonito.rc \
     $(LOCAL_PATH)/sargo/init.sargo.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.sargo.rc \
-    $(LOCAL_PATH)/init.recovery.hardware.device.rc:recovery/root/init.recovery.bonito.rc \
-    $(LOCAL_PATH)/init.recovery.hardware.device.rc:recovery/root/init.recovery.sargo.rc \
+    $(LOCAL_PATH)/init.common.rc:root/init.$(PRODUCT_HARDWARE).rc \
+    $(LOCAL_PATH)/init.recovery.hardware.device.rc:root/init.recovery.bonito.rc \
+    $(LOCAL_PATH)/init.recovery.hardware.device.rc:root/init.recovery.sargo.rc \
 
 MSM_VIDC_TARGET_LIST := sdm710 # Get the color format from kernel headers
 MASTER_SIDE_CP_TARGET_LIST := sdm710 # ION specific settings
@@ -141,24 +116,27 @@ PRODUCT_PACKAGES += \
     update_engine \
     update_verifier
 
-# Resume on Reboot support
-PRODUCT_PACKAGES += \
-    android.hardware.rebootescrow-service.citadel
-
 # Use Sdcardfs
-PRODUCT_PRODUCT_PROPERTIES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     ro.sys.sdcardfs=1
 
 PRODUCT_PACKAGES += \
-    bootctrl.sdm710 \
-    bootctrl.sdm710.recovery
+    bootctrl.sdm710
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.cp_system_other_odex=1
 
-# Userdata Checkpointing OTA GC
-PRODUCT_PACKAGES += \
-    checkpoint_gc
+# Script that copies preloads directory from system_other to data partition
+PRODUCT_COPY_FILES += \
+    device/google/bonito/preloads_copy.sh:system/bin/preloads_copy.sh
+
+AB_OTA_UPDATER := true
+
+AB_OTA_PARTITIONS += \
+    boot \
+    system \
+    vbmeta \
+    dtbo
 
 AB_OTA_POSTINSTALL_CONFIG += \
     RUN_POSTINSTALL_system=true \
@@ -166,26 +144,22 @@ AB_OTA_POSTINSTALL_CONFIG += \
     FILESYSTEM_TYPE_system=ext4 \
     POSTINSTALL_OPTIONAL_system=true
 
-AB_OTA_POSTINSTALL_CONFIG += \
-    RUN_POSTINSTALL_vendor=true \
-    POSTINSTALL_PATH_vendor=bin/checkpoint_gc \
-    FILESYSTEM_TYPE_vendor=ext4 \
-    POSTINSTALL_OPTIONAL_vendor=true
+# Enable update engine sideloading by including the static version of the
+# boot_control HAL and its dependencies.
+PRODUCT_STATIC_BOOT_CONTROL_HAL := \
+    bootctrl.sdm710 \
+    libgptutils \
+    libz \
+    libcutils
 
 PRODUCT_PACKAGES += \
     update_engine_sideload \
-    sg_write_buffer \
-    f2fs_io \
-    check_f2fs
+    sg_write_buffer
 
 # The following modules are included in debuggable builds only.
 PRODUCT_PACKAGES_DEBUG += \
     bootctl \
     update_engine_client
-
-# Write flags to the vendor space in /misc partition.
-PRODUCT_PACKAGES += \
-    misc_writer
 
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml \
@@ -194,7 +168,6 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml\
     frameworks/native/data/etc/android.hardware.bluetooth.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.bluetooth.xml \
     frameworks/native/data/etc/android.hardware.bluetooth_le.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.bluetooth_le.xml \
-    frameworks/native/data/etc/android.hardware.reboot_escrow.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.reboot_escrow.xml \
     frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
     frameworks/native/data/etc/android.hardware.sensor.assist.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.assist.xml \
     frameworks/native/data/etc/android.hardware.sensor.compass.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.compass.xml \
@@ -205,11 +178,9 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.stepcounter.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.stepcounter.xml \
     frameworks/native/data/etc/android.hardware.sensor.stepdetector.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.stepdetector.xml \
     frameworks/native/data/etc/android.hardware.sensor.hifi_sensors.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.hifi_sensors.xml \
-    frameworks/native/data/etc/android.hardware.context_hub.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.context_hub.xml \
     frameworks/native/data/etc/android.hardware.location.gps.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.location.gps.xml \
     frameworks/native/data/etc/android.hardware.telephony.gsm.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.gsm.xml \
     frameworks/native/data/etc/android.hardware.telephony.cdma.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.cdma.xml \
-    frameworks/native/data/etc/android.hardware.telephony.ims.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.ims.xml \
     frameworks/native/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
     frameworks/native/data/etc/android.hardware.wifi.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.xml \
     frameworks/native/data/etc/android.hardware.wifi.direct.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.wifi.direct.xml \
@@ -223,19 +194,15 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.nfc.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.nfc.xml \
     frameworks/native/data/etc/android.hardware.nfc.hce.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.nfc.hce.xml \
     frameworks/native/data/etc/android.hardware.nfc.hcef.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.nfc.hcef.xml \
-    frameworks/native/data/etc/com.nxp.mifare.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/com.nxp.mifare.xml \
     frameworks/native/data/etc/android.hardware.vulkan.level-1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.level.xml \
     frameworks/native/data/etc/android.hardware.vulkan.compute-0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.compute.xml \
     frameworks/native/data/etc/android.hardware.vulkan.version-1_1.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.vulkan.version.xml \
-    frameworks/native/data/etc/android.software.vulkan.deqp.level-2020-03-01.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.vulkan.deqp.level.xml \
     frameworks/native/data/etc/android.hardware.telephony.carrierlock.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.telephony.carrierlock.xml \
-    frameworks/native/data/etc/android.hardware.se.omapi.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.se.omapi.uicc.xml \
     frameworks/native/data/etc/android.hardware.strongbox_keystore.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.strongbox_keystore.xml \
-    frameworks/native/data/etc/android.software.ipsec_tunnels.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.ipsec_tunnels.xml \
 
-# powerstats HAL
+# power HAL
 PRODUCT_PACKAGES += \
-    android.hardware.power.stats@1.0-service.pixel
+    android.hardware.power@1.3-service.bonito-libperfmgr
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/powerhint.json:$(TARGET_COPY_OUT_VENDOR)/etc/powerhint.json
@@ -256,7 +223,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.audio.out_mmap_delay_micros=150 \
     ro.config.vc_call_vol_steps=7 \
     ro.config.media_vol_steps=25 \
-    vendor.audio.offload.gapless.enabled=true \
 
 # MaxxAudio effect and add rotation monitor
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -315,24 +281,13 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.custom_ecc=1 \
     persist.vendor.radio.data_ltd_sys_ind=1 \
     persist.radio.videopause.mode=1 \
-    persist.vendor.radio.mt_sms_ack=30 \
-    persist.vendor.radio.multisim_switch_support=true \
     persist.vendor.radio.sib16_support=1 \
     persist.vendor.radio.data_con_rprt=true \
-    persist.vendor.radio.relay_oprt_change=1 \
-    persist.vendor.radio.sap_silent_pin=1 \
+    persist.vendor.radio.relay_oprt_change=1\
     persist.vendor.radio.no_wait_for_card=1 \
-    persist.vendor.radio.manual_nw_rej_ct=1 \
     persist.rcs.supported=1 \
-    vendor.rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so \
+    vendor.rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so\
     ro.hardware.keystore_desede=true \
-
-# Enable reboot free DSDS
-PRODUCT_PRODUCT_PROPERTIES += \
-    persist.radio.reboot_on_modem_change=false
-
-PRODUCT_PROPERTY_OVERRIDES += \
-    telephony.active_modems.max_count=2
 
 # Disable snapshot timer
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -350,6 +305,10 @@ PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/wifi_concurrency_cfg.txt:$(TARGET_COPY_OUT_VENDOR)/etc/wifi/wifi_concurrency_cfg.txt \
     $(LOCAL_PATH)/WCNSS_qcom_cfg.ini:$(TARGET_COPY_OUT_VENDOR)/firmware/wlan/qca_cld/WCNSS_qcom_cfg.ini \
 
+#ipacm configuration files
+PRODUCT_COPY_FILES += \
+    hardware/qcom/data/ipacfg-mgr/msm8998/ipacm/src/IPACM_cfg.xml:$(TARGET_COPY_OUT_VENDOR)/etc/IPACM_cfg.xml
+
 PRODUCT_PACKAGES += \
     hwcomposer.$(TARGET_CHIPSET) \
     android.hardware.graphics.composer@2.2-service \
@@ -364,10 +323,6 @@ PRODUCT_PACKAGES += \
 # Health HAL
 PRODUCT_PACKAGES += \
     android.hardware.health@2.0-service.bonito
-
-# Storage health HAL
-PRODUCT_PACKAGES += \
-    android.hardware.health.storage@1.0-service
 
 # Light HAL
 PRODUCT_PACKAGES += \
@@ -403,36 +358,30 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
     android.hardware.drm@1.0-impl \
     android.hardware.drm@1.0-service \
-    android.hardware.drm@1.3-service.clearkey \
-    android.hardware.drm@1.3-service.widevine
+    android.hardware.drm@1.1-service.clearkey \
+    android.hardware.drm@1.1-service.widevine
 
 # NFC and Secure Element packages
 PRODUCT_PACKAGES += \
     NfcNci \
     Tag \
     SecureElement \
-    android.hardware.nfc@1.2-service \
-    android.hardware.secure_element@1.1-service-disabled
+    android.hardware.nfc@1.1-service \
+    android.hardware.secure_element@1.0-service-disabled
 
 PRODUCT_COPY_FILES += \
-    device/google/bonito/nfc/libnfc-nci.conf:$(TARGET_COPY_OUT_PRODUCT)/etc/libnfc-nci.conf \
+    device/google/bonito/nfc/libnfc-nci.conf:$(TARGET_COPY_OUT_SYSTEM)/etc/libnfc-nci.conf \
     device/google/bonito/nfc/libese-nxp.conf:$(TARGET_COPY_OUT_VENDOR)/etc/libese-nxp.conf
 
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/android.hardware.nfc.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020A/android.hardware.nfc.uicc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020B/android.hardware.nfc.uicc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020C/android.hardware.nfc.uicc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.ese.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020D/android.hardware.nfc.ese.xml \
-    frameworks/native/data/etc/android.hardware.se.omapi.ese.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020D/android.hardware.se.omapi.ese.xml \
-    frameworks/native/data/etc/android.hardware.nfc.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020E/android.hardware.nfc.uicc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020F/android.hardware.nfc.uicc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.uicc.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020G/android.hardware.nfc.uicc.xml \
-    frameworks/native/data/etc/android.hardware.nfc.ese.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020H/android.hardware.nfc.ese.xml \
-    frameworks/native/data/etc/android.hardware.se.omapi.ese.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/permissions/sku_G020D/android.hardware.se.omapi.ese.xml \
-
-PRODUCT_COPY_FILES += \
-    device/google/bonito/nfc/com.google.hardware.pixel.japan.xml:$(TARGET_COPY_OUT_ODM)/etc/permissions/sku_G020D/com.google.hardware.pixel.japan.xml \
-    device/google/bonito/nfc/com.google.hardware.pixel.japan.xml:$(TARGET_COPY_OUT_ODM)/etc/permissions/sku_G020H/com.google.hardware.pixel.japan.xml
+    device/google/bonito/nfc/manifest_se_SIM1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020A.xml \
+    device/google/bonito/nfc/manifest_se_SIM1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020B.xml \
+    device/google/bonito/nfc/manifest_se_SIM1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020C.xml \
+    device/google/bonito/nfc/manifest_se_eSE1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020D.xml \
+    device/google/bonito/nfc/manifest_se_SIM1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020E.xml \
+    device/google/bonito/nfc/manifest_se_SIM1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020F.xml \
+    device/google/bonito/nfc/manifest_se_SIM1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020G.xml \
+    device/google/bonito/nfc/manifest_se_eSE1.xml:$(TARGET_COPY_OUT_VENDOR)/odm/etc/vintf/manifest_G020H.xml
 
 PRODUCT_PACKAGES += \
     android.hardware.usb@1.1-service.bonito
@@ -447,23 +396,11 @@ PRODUCT_PACKAGES += \
     libc2dcolorconvert
 
 # Enable Codec 2.0
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.media.codec2=2 \
-
-# Disable OMX
-PRODUCT_PROPERTY_OVERRIDES += \
-    vendor.media.omx=0 \
-
-# Create input surface on the framework side
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.stagefright.c2inputsurface=-1 \
-
 PRODUCT_PACKAGES += \
+    libmedia_codecserviceregistrant \
     libqcodec2 \
+    libstagefright_ccodec \
     vendor.qti.media.c2@1.0-service \
-    media_codecs_c2.xml \
-    codec2.vendor.ext.policy \
-    codec2.vendor.base.policy
 
 PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-impl \
@@ -475,16 +412,10 @@ PRODUCT_PACKAGES += \
     libmmcamera_interface \
     libcameradepthcalibrator
 
-# Google Camera HAL test libraries in debug builds
-PRODUCT_PACKAGES_DEBUG += \
-    libgoogle_camera_hal_proprietary_tests \
-    libgoogle_camera_hal_tests.vendor
-
 PRODUCT_PACKAGES += \
     sensors.$(PRODUCT_HARDWARE) \
-    android.hardware.sensors@2.0-impl \
-    android.hardware.sensors@2.0-service \
-    android.hardware.sensors@2.0-service.rc
+    android.hardware.sensors@1.0-impl \
+    android.hardware.sensors@1.0-service
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/sensors/hals.conf:vendor/etc/sensors/hals.conf
@@ -499,16 +430,21 @@ PRODUCT_PACKAGES += \
 
 # Context hub HAL
 PRODUCT_PACKAGES += \
-    android.hardware.contexthub@1.1-service.generic
+    android.hardware.contexthub@1.0-impl.generic \
+    android.hardware.contexthub@1.0-service
 
 # Boot control HAL
 PRODUCT_PACKAGES += \
     android.hardware.boot@1.0-impl \
-    android.hardware.boot@1.0-impl.recovery \
     android.hardware.boot@1.0-service \
 
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/thermal_info_config_$(PRODUCT_HARDWARE).json:$(TARGET_COPY_OUT_VENDOR)/etc/thermal_info_config.json
+# Vibrator HAL
+PRODUCT_PACKAGES += \
+    android.hardware.vibrator@1.2-service.bonito \
+
+# Thermal HAL
+PRODUCT_PACKAGES += \
+    android.hardware.thermal@1.1-service.bonito \
 
 #GNSS HAL
 PRODUCT_PACKAGES += \
@@ -533,19 +469,19 @@ WPA += wpa_supplicant_wcn.conf
 WPA += wpa_supplicant
 PRODUCT_PACKAGES += $(WPA)
 
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-PRODUCT_PACKAGES += wpa_cli
-endif
-
 # Wifi
 PRODUCT_PACKAGES += \
     android.hardware.wifi@1.0-service \
     wificond \
-    libwpa_client \
-    WifiOverlay
+    wifilogd \
+    libwpa_client
 
 LIB_NL := libnl_2
 PRODUCT_PACKAGES += $(LIB_NL)
+
+# Factory OTA
+PRODUCT_PACKAGES += \
+    FactoryOta
 
 # Audio effects
 PRODUCT_PACKAGES += \
@@ -561,14 +497,13 @@ PRODUCT_PACKAGES += \
     audio.usb.default \
     audio.r_submix.default \
     libaudio-resampler \
-    audio.hearing_aid.default \
-    audio.bluetooth.default
+    audio.hearing_aid.default
 
 PRODUCT_PACKAGES += \
-    android.hardware.audio@6.0-impl:32 \
-    android.hardware.audio.effect@6.0-impl:32 \
-    android.hardware.soundtrigger@2.2-impl \
-    android.hardware.bluetooth.audio@2.0-impl \
+    android.hardware.audio@4.0-impl:32 \
+    android.hardware.audio.effect@4.0-impl:32 \
+    android.hardware.broadcastradio@1.0-impl \
+    android.hardware.soundtrigger@2.1-impl \
     android.hardware.audio@2.0-service
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
@@ -583,16 +518,12 @@ endif
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
     $(LOCAL_PATH)/audio_policy_configuration_a2dp_offload_disabled.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration_a2dp_offload_disabled.xml \
-    $(LOCAL_PATH)/audio_policy_configuration_bluetooth_legacy_hal.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration_bluetooth_legacy_hal.xml \
-    $(LOCAL_PATH)/bluetooth_hearing_aid_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_hearing_aid_audio_policy_configuration.xml \
     $(LOCAL_PATH)/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
     frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
-    frameworks/av/services/audiopolicy/config/a2dp_in_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_in_audio_policy_configuration.xml \
-    frameworks/av/services/audiopolicy/config/bluetooth_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_audio_policy_configuration.xml \
-    frameworks/av/services/audiopolicy/config/hearing_aid_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/hearing_aid_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
-    frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml
+    frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
+    frameworks/av/services/audiopolicy/config/hearing_aid_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/hearing_aid_audio_policy_configuration.xml \
 
 # Audio XMLs
 PRODUCT_COPY_FILES += \
@@ -614,10 +545,14 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
     $(LOCAL_PATH)/media_codecs_performance.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_audio.xml \
     frameworks/av/media/libstagefright/data/media_codecs_google_telephony.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_telephony.xml \
     frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_video.xml \
     $(LOCAL_PATH)/media_profiles_V1_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles_V1_0.xml \
-    $(LOCAL_PATH)/media_codecs_omx.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_omx.xml
+    $(LOCAL_PATH)/media_codecs_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_c2.xml \
+    $(LOCAL_PATH)/media_codecs_performance_c2.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_performance_c2.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_c2_audio.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_c2_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_c2_video.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs_google_c2_video.xml \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     audio.snd_card.open.retries=50
@@ -629,8 +564,13 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/gps.conf:$(TARGET_COPY_OUT_VENDOR)/etc/gps.conf
 
+# GPS debug file
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/gps_debug.conf:system/etc/gps_debug.conf
+
 # Vendor seccomp policy files for media components:
 PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/seccomp_policy/codec2.vendor.ext.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/codec2.vendor.ext.policy \
     $(LOCAL_PATH)/seccomp_policy/mediacodec.policy:$(TARGET_COPY_OUT_VENDOR)/etc/seccomp_policy/mediacodec.policy
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
@@ -643,37 +583,25 @@ endif
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.sys.ssr.restart_level=modem,slpi,adsp
 
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-# Sensor debug flag
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.debug.ash.logger=0 \
-    persist.vendor.debug.ash.logger.time=0
-endif
-
 # setup dalvik vm configs
-$(call inherit-product, frameworks/native/build/phone-xhdpi-4096-dalvik-heap.mk)
+$(call inherit-product, frameworks/native/build/phone-xhdpi-2048-dalvik-heap.mk)
 
 PRODUCT_COPY_FILES += \
     device/google/bonito/fstab.hardware:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.$(PRODUCT_PLATFORM) \
-    device/google/bonito/fstab.hardware:$(TARGET_COPY_OUT_RECOVERY)/root/first_stage_ramdisk/fstab.$(PRODUCT_PLATFORM) \
 
 # Use the default charger mode images
 PRODUCT_PACKAGES += \
     charger_res_images
 
+# b/36703476
+# Set default log size on userdebug/eng build to 1M
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-# b/36703476: Set default log size to 1M
-PRODUCT_PROPERTY_OVERRIDES += \
-  ro.logd.size=1M
-# b/114766334: persist all logs by default rotating on 30 files of 1MiB
-PRODUCT_PROPERTY_OVERRIDES += \
-  logd.logpersistd=logcatd \
-  logd.logpersistd.size=30
+PRODUCT_PROPERTY_OVERRIDES += ro.logd.size=1M
 endif
 
 # Dumpstate HAL
 PRODUCT_PACKAGES += \
-    android.hardware.dumpstate@1.1-service.bonito
+    android.hardware.dumpstate@1.0-service.bonito
 
 # Citadel
 PRODUCT_PACKAGES += \
@@ -682,8 +610,7 @@ PRODUCT_PACKAGES += \
     android.hardware.authsecret@1.0-service.citadel \
     android.hardware.oemlock@1.0-service.citadel \
     android.hardware.weaver@1.0-service.citadel \
-    android.hardware.keymaster@4.1-service.citadel \
-    android.hardware.identity@1.0-service.citadel \
+    android.hardware.keymaster@4.0-service.citadel \
     wait_for_strongbox
 
 # Citadel debug stuff
@@ -697,26 +624,24 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
     vndk-sp
 
+PRODUCT_ENFORCE_RRO_TARGETS := framework-res
+
 # Override heap growth limit due to high display density on device
 PRODUCT_PROPERTY_OVERRIDES += \
     dalvik.vm.heapgrowthlimit=256m
 
 PRODUCT_COPY_FILES += \
-    device/google/bonito/hidl/android.hidl.base@1.0.so-32:system_ext/lib/android.hidl.base@1.0.so \
-    device/google/bonito/hidl/android.hidl.base@1.0.so-64:system_ext/lib64/android.hidl.base@1.0.so \
+    device/google/bonito/hidl/android.hidl.base@1.0.so-32:system/lib/android.hidl.base@1.0.so \
+    device/google/bonito/hidl/android.hidl.base@1.0.so-64:system/lib64/android.hidl.base@1.0.so \
     device/google/bonito/hidl/android.hidl.base@1.0.so-32:vendor/lib/android.hidl.base@1.0.so \
     device/google/bonito/hidl/android.hidl.base@1.0.so-64:vendor/lib64/android.hidl.base@1.0.so \
 
 PRODUCT_PACKAGES += \
-    ipacm \
-    IPACM_cfg.xml
+    ipacm
 
 #Set default CDMA subscription to RUIM
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.telephony.default_cdma_sub=0
-
-# Set network mode to Global by default and no DSDS/DSDA
-PRODUCT_PROPERTY_OVERRIDES += ro.telephony.default_network=10
 
 # Set display color mode to Automatic by default
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -727,11 +652,18 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_COPY_FILES += \
     device/google/bonito/permissions/com.google.hardware.camera.easel_2018.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/com.google.hardware.camera.easel_2018.xml
 
+# ConfirmationUI HAL
+PRODUCT_PACKAGES += \
+    android.hardware.confirmationui@1.0-service-bonito
+
 # Fingerprint
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.fpc
-PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/init.fingerprint.sh:$(TARGET_COPY_OUT_VENDOR)/bin/init.fingerprint.sh \
+
+# Reliability reporting
+PRODUCT_PACKAGES += \
+    hardware.google.pixelstats@1.0-service \
+    pixelstats-vendor
 
 PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.fingerprint.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.fingerprint.xml
@@ -800,8 +732,7 @@ PRODUCT_COPY_FILES += \
 
 # Keymaster configuration
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/android.software.device_id_attestation.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.device_id_attestation.xml \
-    frameworks/native/data/etc/android.hardware.device_unique_attestation.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.device_unique_attestation.xml
+    frameworks/native/data/etc/android.software.device_id_attestation.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.device_id_attestation.xml
 
 # Enable modem logging
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -811,19 +742,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # Enable modem logging for debug
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.sys.modem.diag.mdlog=true
-else
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.sys.modem.diag.mdlog=false
-endif
-PRODUCT_PROPERTY_OVERRIDES += \
+    persist.vendor.sys.modem.diag.mdlog=true \
     persist.vendor.sys.modem.diag.mdlog_br_num=5
-
-# Enable tcpdump_logger on userdebug and eng
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-    PRODUCT_PROPERTY_OVERRIDES += \
-        persist.vendor.tcpdump.log.alwayson=false \
-        persist.vendor.tcpdump.log.br_num=5
+else
 endif
 
 # Preopt SystemUI
@@ -832,14 +753,18 @@ PRODUCT_DEXPREOPT_SPEED_APPS += \
 
 # Enable stats logging in LMKD
 TARGET_LMKD_STATS_LOG := true
-PRODUCT_PRODUCT_PROPERTIES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     ro.lmk.log_stats=true
+
+TARGET_ENABLE_MEDIADRM_64 := true
 
 # default usb oem functions
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
   PRODUCT_PROPERTY_OVERRIDES += \
       persist.vendor.usb.usbradio.config=diag
 endif
+
+BUILD_BROKEN_DUP_RULES := true
 
 #Enable QTI KEYMASTER and GATEKEEPER HIDLs
 KMGK_USE_QTI_SERVICE := true
@@ -857,44 +782,14 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.early_gl_app_phase_offset_ns=15000000
 
-# Enable backpressure for GL comp
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.sf.enable_gl_backpressure=1
-
 # Do not skip init trigger by default
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     vendor.skip.init=0
 
-# pixel atrace HAL
-PRODUCT_PACKAGES += \
-    android.hardware.atrace@1.0-service.pixel
-
-# fastbootd
-PRODUCT_PACKAGES += \
-    android.hardware.fastboot@1.0-impl.pixel \
-    fastbootd
-
 # GTS ACSA(Agreement for Carrier Service Application) verification
-PRODUCT_PRODUCT_PROPERTIES += \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     ro.com.google.acsa=true
 
 # Increment the SVN for any official public releases
 PRODUCT_PROPERTY_OVERRIDES += \
-	ro.vendor.build.svn=34
-
-# Vendor verbose logging default property
-ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.verbose_logging_enabled=true
-else
-PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.verbose_logging_enabled=false
-endif
-
-include hardware/google/pixel/vibrator/drv2624/device.mk
-include hardware/google/pixel/pixelstats/device.mk
-include hardware/google/pixel/mm/device_legacy.mk
-include hardware/google/pixel/thermal/device.mk
-
-# power HAL
--include hardware/google/pixel/power-libperfmgr/aidl/device.mk
+	ro.vendor.build.svn=3

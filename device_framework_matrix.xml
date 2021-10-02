@@ -1,19 +1,5 @@
 <compatibility-matrix version="1.0" type="framework">
     <hal format="hidl" optional="true">
-        <name>android.hardware.media.c2</name>
-        <version>1.0</version>
-        <interface>
-            <name>IComponentStore</name>
-            <instance>default</instance>
-            <instance>software</instance>
-        </interface>
-        <interface>
-            <name>IConfigurable</name>
-            <instance>default</instance>
-            <instance>software</instance>
-        </interface>
-    </hal>
-    <hal format="hidl" optional="true">
         <name>com.qualcomm.qti.uceservice</name>
         <version>2.0</version>
         <interface>
@@ -38,11 +24,17 @@
         </interface>
     </hal>
     <hal format="hidl" optional="true">
-        <name>android.hardware.radio.config</name>
-        <version>1.1</version>
+        <name>hardware.google.media.c2</name>
+        <version>1.0</version>
         <interface>
-            <name>IRadioConfig</name>
+            <name>IComponentStore</name>
             <instance>default</instance>
+            <instance>software</instance>
+        </interface>
+        <interface>
+            <name>IConfigurable</name>
+            <instance>default</instance>
+            <instance>software</instance>
         </interface>
     </hal>
     <hal format="hidl" optional="true">
@@ -55,7 +47,7 @@
     </hal>
     <hal format="hidl" optional="true">
         <name>vendor.google.radioext</name>
-        <version>1.2</version>
+        <version>1.0</version>
         <interface>
             <name>IRadioExt</name>
             <instance>default</instance>
@@ -99,7 +91,14 @@
         <interface>
             <name>IQcRilAudio</name>
             <instance>slot1</instance>
-            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.qti.hardware.radio.atcmdfwd</name>
+        <version>1.0</version>
+        <interface>
+            <name>IAtCmdFwd</name>
+            <instance>AtCmdFwdService</instance>
         </interface>
     </hal>
     <hal format="hidl" optional="true">
@@ -108,7 +107,6 @@
         <interface>
             <name>IImsRadio</name>
             <instance>imsradio0</instance>
-            <instance>imsradio1</instance>
         </interface>
     </hal>
     <hal format="hidl" optional="true">
@@ -125,7 +123,14 @@
         <interface>
             <name>IQtiOemHook</name>
             <instance>oemhook0</instance>
-            <instance>oemhook1</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.qti.hardware.radio.uim</name>
+        <version>1.0</version>
+        <interface>
+            <name>IUim</name>
+            <instance>Uim0</instance>
         </interface>
     </hal>
     <hal format="hidl" optional="true">
@@ -166,15 +171,6 @@
         <version>1.0</version>
         <interface>
             <name>IService</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl" optional="true">
-        <name>vendor.google.wifi_ext</name>
-        <transport>hwbinder</transport>
-        <version>1.1</version>
-        <interface>
-            <name>IWifiExt</name>
             <instance>default</instance>
         </interface>
     </hal>

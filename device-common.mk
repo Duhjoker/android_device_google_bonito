@@ -21,9 +21,6 @@ LOCAL_PATH := device/google/bonito
 # define hardware platform
 PRODUCT_PLATFORM := sdm670
 
-# Enable updating of APEXes
-$(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
-
 include device/google/bonito/device-audio-mfg.mk
 include device/google/bonito/device.mk
 
@@ -38,10 +35,7 @@ PRODUCT_PROPERTY_OVERRIDES += debug.stagefright.ccodec=4
 PRODUCT_PROPERTY_OVERRIDES += debug.stagefright.omx_default_rank=512
 
 # Setting vendor SPL
-VENDOR_SECURITY_PATCH = $(PLATFORM_SECURITY_PATCH)
-
-# Set boot SPL
-BOOT_SECURITY_PATCH = $(PLATFORM_SECURITY_PATCH)
+VENDOR_SECURITY_PATCH = "2018-09-05"
 
 # MIDI feature
 PRODUCT_COPY_FILES += \
@@ -73,9 +67,16 @@ PRODUCT_PROPERTY_OVERRIDES += aaudio.mmap_exclusive_policy=2
 PRODUCT_PROPERTY_OVERRIDES += aaudio.hw_burst_min_usec=2000
 
 # Set lmkd options
-PRODUCT_PRODUCT_PROPERTIES += \
-    ro.config.low_ram = false \
-    ro.lmk.log_stats = true \
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+    ro.lmk.low=1001 \
+    ro.lmk.medium=800 \
+    ro.lmk.critical=0 \
+    ro.lmk.critical_upgrade=false \
+    ro.lmk.upgrade_pressure=100 \
+    ro.lmk.downgrade_pressure=100 \
+    ro.lmk.kill_heaviest_task=true \
+    ro.lmk.kill_timeout_ms=100 \
+    ro.lmk.use_minfree_levels=true \
 
 # A2DP offload enabled for compilation
 AUDIO_FEATURE_ENABLED_A2DP_OFFLOAD := true
@@ -100,27 +101,57 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     android.hardware.dumpstate@1.0-service.bonito
 
-# Enable retrofit dynamic partitions for all bonito
-# and sargo targets
-PRODUCT_USE_DYNAMIC_PARTITIONS := true
-PRODUCT_RETROFIT_DYNAMIC_PARTITIONS := true
-PRODUCT_PACKAGES += \
-    android.hardware.boot@1.0-impl.recovery \
-    bootctrl.sdm710 \
-    bootctrl.sdm710.recovery \
-    check_dynamic_partitions \
-
-AB_OTA_POSTINSTALL_CONFIG += \
-    RUN_POSTINSTALL_product=true \
-    POSTINSTALL_PATH_product=bin/check_dynamic_partitions \
-    FILESYSTEM_TYPE_product=ext4 \
-    POSTINSTALL_OPTIONAL_product=false \
-
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.surface_flinger.use_color_management=true
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.surface_flinger.protected_contents=true
-
-# Set thermal warm reset
-PRODUCT_PRODUCT_PROPERTIES += \
-    ro.thermal_warmreset = true \
-
-include $(LOCAL_PATH)/recovery/device-twrp.mk
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/recovery/root/plat_hwservice_contexts:recovery/root/plat_hwservice_contexts \
+    $(LOCAL_PATH)/recovery/root/plat_service_contexts:recovery/root/plat_service_contexts \
+    $(LOCAL_PATH)/recovery/root/vendor_hwservice_contexts:recovery/root/vendor_hwservice_contexts \
+    $(LOCAL_PATH)/recovery/root/vndservice_contexts:recovery/root/vndservice_contexts \
+    $(LOCAL_PATH)/recovery/root/etc/twrp.fstab:recovery/root/etc/twrp.fstab \
+    $(LOCAL_PATH)/recovery/root/sbin/android.hardware.boot@1.0-service:recovery/root/sbin/android.hardware.boot@1.0-service \
+    $(LOCAL_PATH)/recovery/root/sbin/android.hardware.confirmationui@1.0.so:recovery/root/sbin/android.hardware.confirmationui@1.0.so \
+    $(LOCAL_PATH)/recovery/root/sbin/android.hardware.keymaster@4.0-service-qti:recovery/root/sbin/android.hardware.keymaster@4.0-service-qti \
+    $(LOCAL_PATH)/recovery/root/sbin/android.hardware.weaver@1.0.so:recovery/root/sbin/android.hardware.weaver@1.0.so \
+    $(LOCAL_PATH)/recovery/root/sbin/android.hardware.weaver@1.0-service.citadel:recovery/root/sbin/android.hardware.weaver@1.0-service.citadel \
+    $(LOCAL_PATH)/recovery/root/sbin/citadeld:recovery/root/sbin/citadeld \
+    $(LOCAL_PATH)/recovery/root/sbin/ld.config.txt:recovery/root/sbin/ld.config.txt \
+    $(LOCAL_PATH)/recovery/root/sbin/libdiag.so:recovery/root/sbin/libdiag.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libdrmfs.so:recovery/root/sbin/libdrmfs.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libdrmtime.so:recovery/root/sbin/libdrmtime.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libgptutils.so:recovery/root/sbin/libgptutils.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libicuuc.so:recovery/root/sbin/libicuuc.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libion.so:recovery/root/sbin/libion.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libprotobuf-cpp-full.so:recovery/root/sbin/libprotobuf-cpp-full.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libQSEEComAPI.so:recovery/root/sbin/libQSEEComAPI.so \
+    $(LOCAL_PATH)/recovery/root/sbin/librpmb.so:recovery/root/sbin/librpmb.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libsecureui.so:recovery/root/sbin/libsecureui.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libssd.so:recovery/root/sbin/libssd.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libtime_genoff.so:recovery/root/sbin/libtime_genoff.so \
+    $(LOCAL_PATH)/recovery/root/sbin/libxml2.so:recovery/root/sbin/libxml2.so \
+    $(LOCAL_PATH)/recovery/root/sbin/prepdecrypt.sh:recovery/root/sbin/prepdecrypt.sh \
+    $(LOCAL_PATH)/recovery/root/sbin/qseecomd:recovery/root/sbin/qseecomd \
+    $(LOCAL_PATH)/recovery/root/sbin/touchdriver.sh:recovery/root/sbin/touchdriver.sh \
+    $(LOCAL_PATH)/recovery/root/sbin/vndservicemanager:recovery/root/sbin/vndservicemanager \
+    $(LOCAL_PATH)/recovery/root/system/etc/vintf/manifest.xml:recovery/root/manifest.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/compatibility_matrix.1.xml:recovery/root/vendor/compatibility_matrix.1.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/compatibility_matrix.2.xml:recovery/root/vendor/compatibility_matrix.2.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/compatibility_matrix.3.xml:recovery/root/vendor/compatibility_matrix.3.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/compatibility_matrix.device.xml:recovery/root/vendor/compatibility_matrix.device.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/compatibility_matrix.legacy.xml:recovery/root/vendor/compatibility_matrix.legacy.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/compatibility_matrix.xml:recovery/root/vendor/compatibility_matrix.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/etc/vintf/compatibility_matrix.xml:recovery/root/vendor/etc/vintf/compatibility_matrix.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/etc/vintf/manifest.xml:recovery/root/vendor/etc/vintf/manifest.xml \
+    $(LOCAL_PATH)/recovery/root/vendor/firmware/drv2624.bin:recovery/root/vendor/firmware/drv2624.bin \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/android.hardware.weaver@1.0-impl.nos.so:recovery/root/vendor/lib64/android.hardware.weaver@1.0-impl.nos.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libkeymasterdeviceutils.so:recovery/root/vendor/lib64/libkeymasterdeviceutils.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libkeymasterutils.so:recovery/root/vendor/lib64/libkeymasterutils.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnos.so:recovery/root/vendor/lib64/libnos.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnos_citadeld_proxy.so:recovery/root/vendor/lib64/libnos_citadeld_proxy.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnos_client_citadel.so:recovery/root/vendor/lib64/libnos_client_citadel.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnos_datagram.so:recovery/root/vendor/lib64/libnos_datagram.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnos_datagram_citadel.so:recovery/root/vendor/lib64/libnos_datagram_citadel.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnosprotos.so:recovery/root/vendor/lib64/libnosprotos.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libnos_transport.so:recovery/root/vendor/lib64/libnos_transport.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/libqtikeymaster4.so:recovery/root/vendor/lib64/libqtikeymaster4.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/nos_app_weaver.so:recovery/root/vendor/lib64/nos_app_weaver.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/hw/android.hardware.boot@1.0-impl.so:recovery/root/vendor/lib64/hw/android.hardware.boot@1.0-impl.so \
+    $(LOCAL_PATH)/recovery/root/vendor/lib64/hw/bootctrl.sdm710.so:recovery/root/vendor/lib64/hw/bootctrl.sdm710.so

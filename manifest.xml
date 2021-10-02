@@ -2,7 +2,7 @@
     <hal format="hidl">
         <name>android.hardware.audio</name>
         <transport>hwbinder</transport>
-        <version>6.0</version>
+        <version>4.0</version>
         <interface>
             <name>IDevicesFactory</name>
             <instance>default</instance>
@@ -11,7 +11,7 @@
     <hal format="hidl">
         <name>android.hardware.audio.effect</name>
         <transport>hwbinder</transport>
-        <version>6.0</version>
+        <version>4.0</version>
         <interface>
             <name>IEffectsFactory</name>
             <instance>default</instance>
@@ -29,7 +29,7 @@
     <hal format="hidl">
         <name>android.hardware.biometrics.fingerprint</name>
         <transport>hwbinder</transport>
-        <version>2.2</version>
+        <version>2.1</version>
         <interface>
             <name>IBiometricsFingerprint</name>
             <instance>default</instance>
@@ -45,11 +45,11 @@
         </interface>
     </hal>
     <hal format="hidl">
-        <name>android.hardware.bluetooth.audio</name>
+        <name>android.hardware.bluetooth.a2dp</name>
         <transport>hwbinder</transport>
-        <version>2.0</version>
+        <version>1.0</version>
         <interface>
-            <name>IBluetoothAudioProvidersFactory</name>
+            <name>IBluetoothAudioOffload</name>
             <instance>default</instance>
         </interface>
     </hal>
@@ -72,6 +72,15 @@
         </interface>
     </hal>
     <hal format="hidl">
+        <name>android.hardware.cas</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IMediaCasService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
         <name>android.hardware.configstore</name>
         <transport>hwbinder</transport>
         <version>1.1</version>
@@ -90,6 +99,15 @@
         </interface>
     </hal>
     <hal format="hidl">
+        <name>android.hardware.contexthub</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IContexthub</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
         <name>android.hardware.drm</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
@@ -101,13 +119,15 @@
             <name>IDrmFactory</name>
             <instance>default</instance>
         </interface>
-        <fqname>@1.2::ICryptoFactory/clearkey</fqname>
-        <fqname>@1.2::IDrmFactory/clearkey</fqname>
+        <fqname>@1.1::ICryptoFactory/clearkey</fqname>
+        <fqname>@1.1::IDrmFactory/clearkey</fqname>
+        <fqname>@1.1::ICryptoFactory/widevine</fqname>
+        <fqname>@1.1::IDrmFactory/widevine</fqname>
     </hal>
     <hal format="hidl">
         <name>android.hardware.dumpstate</name>
         <transport>hwbinder</transport>
-        <version>1.1</version>
+        <version>1.0</version>
         <interface>
             <name>IDumpstateDevice</name>
             <instance>default</instance>
@@ -170,8 +190,12 @@
     <hal format="hidl">
         <name>android.hardware.keymaster</name>
         <transport>hwbinder</transport>
-        <fqname>@4.0::IKeymasterDevice/default</fqname>
-        <fqname>@4.1::IKeymasterDevice/strongbox</fqname>
+        <version>4.0</version>
+        <interface>
+            <name>IKeymasterDevice</name>
+            <instance>default</instance>
+            <instance>strongbox</instance>
+        </interface>
     </hal>
     <hal format="hidl">
         <name>android.hardware.light</name>
@@ -179,15 +203,6 @@
         <version>2.0</version>
         <interface>
             <name>ILight</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
-        <name>android.hardware.media.c2</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IComponentStore</name>
             <instance>default</instance>
         </interface>
     </hal>
@@ -216,15 +231,16 @@
     <hal format="hidl">
         <name>android.hardware.neuralnetworks</name>
         <transport>hwbinder</transport>
-        <fqname>@1.0::IDevice/paintbox</fqname>
-        <fqname>@1.3::IDevice/qti-default</fqname>
-        <fqname>@1.3::IDevice/qti-dsp</fqname>
-        <fqname>@1.3::IDevice/qti-gpu</fqname>
+        <version>1.0</version>
+        <interface>
+            <name>IDevice</name>
+            <instance>paintbox</instance>
+        </interface>
     </hal>
     <hal format="hidl">
         <name>android.hardware.nfc</name>
         <transport>hwbinder</transport>
-        <version>1.2</version>
+        <version>1.1</version>
         <interface>
             <name>INfc</name>
             <instance>default</instance>
@@ -240,11 +256,11 @@
         </interface>
     </hal>
     <hal format="hidl">
-        <name>android.hardware.power.stats</name>
+        <name>android.hardware.power</name>
         <transport>hwbinder</transport>
-        <version>1.0</version>
+        <version>1.3</version>
         <interface>
-            <name>IPowerStats</name>
+            <name>IPower</name>
             <instance>default</instance>
         </interface>
     </hal>
@@ -260,7 +276,7 @@
     <hal format="hidl">
         <name>vendor.google.radioext</name>
         <transport>hwbinder</transport>
-        <version>1.2</version>
+        <version>1.0</version>
         <interface>
             <name>IRadioExt</name>
             <instance>default</instance>
@@ -270,13 +286,12 @@
         <name>android.hardware.radio</name>
         <transport>hwbinder</transport>
         <fqname>@1.2::ISap/slot1</fqname>
-        <fqname>@1.3::IRadio/slot1</fqname>
-        <fqname>@1.3::IRadio/slot2</fqname>
+        <fqname>@1.2::IRadio/slot1</fqname>
     </hal>
     <hal format="hidl">
       <name>android.hardware.radio.config</name>
       <transport>hwbinder</transport>
-      <version>1.1</version>
+      <version>1.0</version>
       <interface>
         <name>IRadioConfig</name>
         <instance>default</instance>
@@ -294,7 +309,7 @@
     <hal format="hidl">
         <name>android.hardware.sensors</name>
         <transport>hwbinder</transport>
-        <version>2.0</version>
+        <version>1.0</version>
         <interface>
             <name>ISensors</name>
             <instance>default</instance>
@@ -303,9 +318,18 @@
     <hal format="hidl">
         <name>android.hardware.soundtrigger</name>
         <transport>hwbinder</transport>
-        <version>2.2</version>
+        <version>2.1</version>
         <interface>
             <name>ISoundTriggerHw</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.thermal</name>
+        <transport>hwbinder</transport>
+        <version>1.1</version>
+        <interface>
+            <name>IThermal</name>
             <instance>default</instance>
         </interface>
     </hal>
@@ -328,11 +352,65 @@
         </interface>
     </hal>
     <hal format="hidl">
+        <name>android.hardware.usb</name>
+        <transport>hwbinder</transport>
+        <version>1.1</version>
+        <interface>
+            <name>IUsb</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.usb.gadget</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IUsbGadget</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.vibrator</name>
+        <transport>hwbinder</transport>
+        <version>1.2</version>
+        <interface>
+            <name>IVibrator</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
         <name>android.hardware.weaver</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
         <interface>
             <name>IWeaver</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.wifi</name>
+        <transport>hwbinder</transport>
+        <version>1.2</version>
+        <interface>
+            <name>IWifi</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.wifi.hostapd</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IHostapd</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.wifi.supplicant</name>
+        <transport>hwbinder</transport>
+        <version>1.1</version>
+        <interface>
+            <name>ISupplicant</name>
             <instance>default</instance>
         </interface>
     </hal>
@@ -343,7 +421,6 @@
         <interface>
             <name>IImsRadio</name>
             <instance>imsradio0</instance>
-            <instance>imsradio1</instance>
         </interface>
     </hal>
     <hal format="hidl">
@@ -362,7 +439,15 @@
         <interface>
             <name>IQtiOemHook</name>
             <instance>oemhook0</instance>
-            <instance>oemhook1</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>vendor.qti.hardware.radio.uim</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IUim</name>
+            <instance>Uim0</instance>
         </interface>
     </hal>
     <hal format="hidl">
@@ -426,7 +511,6 @@
         <interface>
             <name>IQcRilAudio</name>
             <instance>slot1</instance>
-            <instance>slot2</instance>
         </interface>
     </hal>
     <hal format="hidl">
@@ -456,6 +540,21 @@
         <interface>
             <name>INxpNfc</name>
             <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>hardware.google.media.c2</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IComponentStore</name>
+            <instance>default</instance>
+            <instance>software</instance>
+        </interface>
+        <interface>
+            <name>IConfigurable</name>
+            <instance>default</instance>
+            <instance>software</instance>
         </interface>
     </hal>
 </manifest>

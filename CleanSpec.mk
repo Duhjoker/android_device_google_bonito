@@ -100,7 +100,7 @@ $(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.gr
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/lib64/hw/android.hardware.graphics.composer@2.1-impl.so)
 
 # Remove StrongBox RC
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.keymaster@4.1-service.citadel.rc)
+$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.keymaster@4.0-service.citadel.rc)
 
 # Migrate to versioned VNDK directory
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/lib/vndk-sp)
@@ -136,66 +136,3 @@ $(call add-clean-step, rm -rf $(PRODUCT_OUT)/product)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/root/product)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/product)
 
-# Remove init.environ.rc to force product to be recreated on other devices
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/root/init.environ.rc)
-
-# Verified boot xml moved to /product
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/etc/permissions/android.software.verified_boot.xml)
-
-# Move libnfc-nci.conf to /vendor
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/etc/libnfc-nci.conf)
-
-# ThermalHAL 1.1
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.thermal@1.1-service.bonito.rc)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/bin/hw/android.hardware.thermal@1.1-service.bonito)
-
-# Move fingerprint input files to /vendor
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/usr/keylayout/uinput-fpc.kl)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/usr/idc/uinput-fpc.idc)
-
-# Recovery init files moved to recovery
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/root/init.recovery.*.rc)
-
-# Add product partition
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/product)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/root/product)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/app)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/etc)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/fonts)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/framework)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/media)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/priv-app)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/product)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/usr)
-
-# Rename power HAL
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.power@1.3-service.bonito-libperfmgr.rc)
-
-# Remove generic atrace HAL
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.atrace@1.0-service.rc)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/vintf/manifest/android.hardware.atrace@1.0-service.xml)
-
-# Remove obsolete android.hardware.boot@1.0-impl-wrapper.recovery.so
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/recovery/root/system/lib64/hw/android.hardware.boot@1.0-impl-wrapper.recovery.so)
-
-# Vibrator HAL 1.2 renamed from 'bonito' to 'drv2624'
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.vibrator@1.2-service.bonito.rc)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/bin/hw/android.hardware.vibrator@1.2-service.bonito)
-
-# Vibrator HAL upgraded from 1-2 to 1-3
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.vibrator@1.2-service.drv2624.rc)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/bin/hw/android.hardware.vibrator@1.2-service.drv2624)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/vintf/manifest/android.hardware.vibrator@1.2-service.drv2624.xml)
-
-# Move android.hidl.base@1.0.so to system_ext
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/lib/android.hidl.base@1.0.so)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system/lib64/android.hidl.base@1.0.so)
-
-# Removing GSI keys from the ramdisk.
-# Those keys will be embedded into VTS instead, to verify the GSI image in used.
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/recovery/root/first_stage_ramdisk/avb/q-gsi.avbpubkey)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/recovery/root/first_stage_ramdisk/avb/r-gsi.avbpubkey)
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/recovery/root/first_stage_ramdisk/avb/s-gsi.avbpubkey)
-
-# Use stable aidl power HAL
-$(call add-clean-step, rm -rf $(PRODUCT_OUT)/vendor/etc/init/android.hardware.power@1.3-service.pixel-libperfmgr.rc)

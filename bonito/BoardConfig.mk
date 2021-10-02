@@ -15,7 +15,6 @@
 #
 
 TARGET_BOOTLOADER_BOARD_NAME := bonito
-TARGET_SCREEN_DENSITY := 400
 TARGET_RECOVERY_UI_MARGIN_HEIGHT := 165
 
 include device/google/bonito/BoardConfig-common.mk
