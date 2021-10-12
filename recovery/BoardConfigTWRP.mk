@@ -28,14 +28,13 @@ BOARD_USES_QCOM_FBE_DECRYPTION := true
 
 # Recovery
 TARGET_RECOVERY_DEVICE_MODULES += \
-    android.hardware.vibrator@1.2-service.bonito \
-    android.hidl.base@1.0 \
+    android.hardware.vibrator-service.drv2624 \
     libandroidicu \
     libion
+    
 RECOVERY_BINARY_SOURCE_FILES += \
-    $(TARGET_OUT_VENDOR_EXECUTABLES)/hw/android.hardware.vibrator@1.2-service.bonito
+    $(TARGET_OUT_VENDOR_EXECUTABLES)/hw/android.hardware.vibrator-service.drv2624
 RECOVERY_LIBRARY_SOURCE_FILES += \
-    $(TARGET_OUT_SHARED_LIBRARIES)/android.hidl.base@1.0.so \
     $(TARGET_OUT_SHARED_LIBRARIES)/libion.so
 
 # TWRP Standard Flags
