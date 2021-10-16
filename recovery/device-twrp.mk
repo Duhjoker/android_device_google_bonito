@@ -10,7 +10,8 @@ PRODUCT_PACKAGES += \
     qcom_decrypt_fbe
 
 # Apex libraries
-
+PRODUCT_COPY_FILES += \
+    device/google/bonito/recovery/root/system/lib64/libandroidicu.so:$(TARGET_COPY_OUT_RECOVERY)/root/system/lib64/libandroidicu.so
 
 # Copy modules for depmod
 PRODUCT_COPY_FILES += \
