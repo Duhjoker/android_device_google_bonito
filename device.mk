@@ -48,15 +48,16 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.software.verified_boot.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/android.software.verified_boot.xml
 
 # Enforce privapp-permissions whitelist
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.control_privapp_permissions=enforce
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    ro.control_privapp_permissions=enforce
 
 # Enable on-access verification of priv apps. This requires fs-verity support in kernel.
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.apk_verity.mode=1
 
 PRODUCT_PACKAGES += \
-    messaging
+    messaging \
+    netutils-wrapper-1.0
 
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 PRODUCT_PACKAGES += chre_test_client
@@ -71,9 +72,9 @@ $(call inherit-product, $(LOCAL_PATH)/utils.mk)
 # Installs gsi keys into ramdisk, to boot a developer GSI with verified boot.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/developer_gsi_keys.mk)
 
-ifeq ($(wildcard vendor/google_devices/bonito/proprietary/device-vendor-bonito.mk),)
-    BUILD_WITHOUT_VENDOR := true
-endif
+#ifeq ($(wildcard vendor/google_devices/bonito/proprietary/device-vendor-bonito.mk),)
+#    BUILD_WITHOUT_VENDOR := true
+#endif
 
 ifeq ($(TARGET_PREBUILT_KERNEL),)
     LOCAL_KERNEL := device/google/bonito-kernel/Image.lz4
@@ -85,6 +86,7 @@ PRODUCT_CHARACTERISTICS := nosdcard
 PRODUCT_SHIPPING_API_LEVEL := 28
 
 DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
+PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += vendor/proton/overlay
 
 PRODUCT_COPY_FILES += \
     $(LOCAL_KERNEL):kernel \
@@ -315,7 +317,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.radio.custom_ecc=1 \
     persist.vendor.radio.data_ltd_sys_ind=1 \
     persist.radio.videopause.mode=1 \
-    persist.vendor.radio.mt_sms_ack=30 \
     persist.vendor.radio.multisim_switch_support=true \
     persist.vendor.radio.sib16_support=1 \
     persist.vendor.radio.data_con_rprt=true \
@@ -326,6 +327,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.rcs.supported=1 \
     vendor.rild.libpath=/vendor/lib64/libril-qc-hal-qmi.so \
     ro.hardware.keystore_desede=true \
+    ro.zram.mark_idle_delay_mins=60 \
+    ro.zram.first_wb_delay_mins=180 \
+    ro.zram.periodic_wb_delay_hours=24 \
 
 # Enable reboot free DSDS
 PRODUCT_PRODUCT_PROPERTIES += \
@@ -333,6 +337,10 @@ PRODUCT_PRODUCT_PROPERTIES += \
 
 PRODUCT_PROPERTY_OVERRIDES += \
     telephony.active_modems.max_count=2
+
+# Native video calling
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.dbg.vt_avail_ovr=1
 
 # Disable snapshot timer
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -539,7 +547,6 @@ endif
 
 # Wifi
 PRODUCT_PACKAGES += \
-    android.hardware.wifi@1.0-service \
     wificond \
     libwpa_client \
     WifiOverlay
@@ -636,7 +643,7 @@ PRODUCT_COPY_FILES += \
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
 # Subsystem ramdump
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.vendor.sys.ssr.enable_ramdumps=1
+    persist.vendor.sys.ssr.enable_ramdumps=0
 endif
 
 # Subsystem silent restart
@@ -650,7 +657,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     persist.vendor.debug.ash.logger.time=0
 endif
 
-# setup dalvik vm configs
+# Setup Dalvik VM configurations
 $(call inherit-product, frameworks/native/build/phone-xhdpi-4096-dalvik-heap.mk)
 
 PRODUCT_COPY_FILES += \
@@ -828,7 +835,7 @@ endif
 
 # Preopt SystemUI
 PRODUCT_DEXPREOPT_SPEED_APPS += \
-    SystemUIGoogle
+    SystemUI
 
 # Enable stats logging in LMKD
 TARGET_LMKD_STATS_LOG := true
@@ -847,15 +854,23 @@ KMGK_USE_QTI_SERVICE := true
 #Clear the variable
 TARGET_CHIPSET := ""
 
+# Enable missing props
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.opa.eligible_device=true
+
 # Early phase offset configuration for SurfaceFlinger
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.sf.early_phase_offset_ns=1500000
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.sf.early_app_phase_offset_ns=1500000
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.sf.early_gl_phase_offset_ns=3000000
-PRODUCT_PROPERTY_OVERRIDES += \
-    debug.sf.early_gl_app_phase_offset_ns=15000000
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    debug.sf.early_phase_offset_ns=1500000
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    debug.sf.early_app_phase_offset_ns=1500000
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    debug.sf.early_gl_phase_offset_ns=3000000
+#PRODUCT_PROPERTY_OVERRIDES += \
+#    debug.sf.early_gl_app_phase_offset_ns=15000000
+
+# Force triple frame buffers
+PRODUCT_PRODUCT_PROPERTIES += \
+    ro.surface_flinger.max_frame_buffer_acquired_buffers=3
 
 # Enable backpressure for GL comp
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -880,7 +895,7 @@ PRODUCT_PRODUCT_PROPERTIES += \
 
 # Increment the SVN for any official public releases
 PRODUCT_PROPERTY_OVERRIDES += \
-	ro.vendor.build.svn=34
+	ro.vendor.build.svn=30
 
 # Vendor verbose logging default property
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
@@ -898,3 +913,52 @@ include hardware/google/pixel/thermal/device.mk
 
 # power HAL
 -include hardware/google/pixel/power-libperfmgr/aidl/device.mk
+
+# Missing vendor packages
+PRODUCT_PACKAGES += \
+    chre \
+    ese_spi_nxp:64 \
+    hardware.google.light@1.0.vendor \
+    libavservices_minijail_vendor:32 \
+    libcodec2_hidl@1.0.vendor:32 \
+    libcodec2_vndk.vendor \
+    libdisplayconfig \
+    libdrm.vendor \
+    libhidltransport.vendor \
+    libhwbinder.vendor \
+    libjson \
+    libkeymaster_messages.vendor:64 \
+    libkeymaster_portable.vendor:64 \
+    libnetfilter_conntrack:64 \
+    libnfnetlink:64 \
+    libnos:64 \
+    libnos_client_citadel:64 \
+    libnos_datagram:64 \
+    libnos_datagram_citadel:64 \
+    libnosprotos:64 \
+    libnos_transport:64 \
+    libpuresoftkeymasterdevice.vendor:64 \
+    libsensorndkbridge:64 \
+    libsoft_attestation_cert.vendor:64 \
+    libtinycompress \
+    libtinyxml \
+    libwifi-hal:64 \
+    libwifi-hal-qcom \
+    nos_app_avb:64 \
+    nos_app_identity:64 \
+    nos_app_keymaster:64 \
+    nos_app_weaver:64 \
+    vendor.display.config@1.0.vendor \
+    vendor.display.config@1.1.vendor \
+    vendor.display.config@1.2.vendor \
+    vendor.display.config@1.3.vendor
+
+# EUICC
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.telephony.euicc.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/android.hardware.telephony.euicc.xml
+
+# RCS
+PRODUCT_PACKAGES += \
+    com.android.ims.rcsmanager \
+    PresencePolling \
+    RcsService

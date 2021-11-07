@@ -38,6 +38,15 @@ TARGET_BOARD_COMMON_PATH := device/google/bonito/sdm710
 
 BUILD_BROKEN_DUP_RULES := true
 
+# Hack for sdm845 display on R+ which started erroring.
+BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
+
+# Hack for Jelly on /product/
+DISABLE_ARTIFACT_PATH_REQUIREMENTS := true
+
+# Hack for our vendor repo for now
+BUILD_BROKEN_VINTF_PRODUCT_COPY_FILES := true
+
 BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200n8 androidboot.console=ttyMSM0 printk.devkmsg=on
 BOARD_KERNEL_CMDLINE += msm_rtb.filter=0x237
 BOARD_KERNEL_CMDLINE += ehci-hcd.park=3
@@ -81,13 +90,15 @@ AB_OTA_PARTITIONS += \
     vbmeta \
     dtbo \
     product \
-    system_ext
+    system_ext \
+    vendor
 
 BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_SYSTEM_EXTIMAGE_FILE_SYSTEM_TYPE := ext4
 
 # Partitions (listed in the file) to be wiped under recovery.
 TARGET_RECOVERY_WIPE := device/google/bonito/recovery.wipe
+TARGET_RECOVERY_FSTAB := device/google/bonito/fstab.hardware
 TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
 TARGET_RECOVERY_UI_LIB := \
     librecovery_ui_pixel \
@@ -102,6 +113,9 @@ BOARD_PERSISTIMAGE_FILE_SYSTEM_TYPE := ext4
 
 # boot.img
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x04000000
+
+# vendor.img
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 
 BOARD_SUPER_PARTITION_GROUPS := google_dynamic_partitions
 BOARD_GOOGLE_DYNAMIC_PARTITIONS_PARTITION_LIST := \
@@ -123,6 +137,8 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 
 BOARD_ROOT_EXTRA_SYMLINKS := /mnt/vendor/persist:/persist
 BOARD_ROOT_EXTRA_SYMLINKS += /vendor/dsp:/dsp
+
+include device/google/bonito-sepolicy/bonito-sepolicy.mk
 
 TARGET_FS_CONFIG_GEN := device/google/bonito/config.fs
 
@@ -165,7 +181,7 @@ WPA_SUPPLICANT_VERSION := VER_0_8_X
 BOARD_WPA_SUPPLICANT_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
 BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_$(BOARD_WLAN_DEVICE)
 WIFI_HIDL_FEATURE_AWARE := true
-WIFI_HIDL_FEATURE_DUAL_INTERFACE:= true
+WIFI_HIDL_FEATURE_DUAL_INTERFACE := true
 WIFI_FEATURE_WIFI_EXT_HAL := true
 WIFI_FEATURE_IMU_DETECTION := false
 WIFI_HIDL_UNIFIED_SUPPLICANT_SERVICE_RC_ENTRY := true
@@ -198,9 +214,9 @@ TARGET_USES_COLOR_METADATA := true
 TARGET_USES_DRM_PP := true
 
 # Vendor Interface Manifest
-DEVICE_MANIFEST_FILE := device/google/bonito/manifest.xml
-DEVICE_MATRIX_FILE := device/google/bonito/compatibility_matrix.xml
-DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := device/google/bonito/device_framework_matrix.xml
+DEVICE_MANIFEST_FILE += device/google/bonito/manifest.xml
+DEVICE_MATRIX_FILE += device/google/bonito/compatibility_matrix.xml
+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += device/google/bonito/device_framework_matrix.xml
 
 # Userdebug only Vendor Interface Manifest
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
@@ -270,5 +286,3 @@ endif
 BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/b4s4-setup.sh
 
 -include vendor/google_devices/bonito/proprietary/BoardConfigVendor.mk
-
--include device/google/bonito/recovery/BoardConfigTWRP.mk
