@@ -966,6 +966,9 @@ PRODUCT_PACKAGES += \
 # Pixel Logger
 include hardware/google/pixel/PixelLogger/PixelLogger.mk
 
+PRODUCT_COPY_FILES += \
+    device/google/bonito/permissions/privapp-permissions-aosp-extended.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/permissions/privapp-permissions-aosp-extended.xml
+
 # RCS
 PRODUCT_PACKAGES += \
     com.android.ims.rcsmanager \
