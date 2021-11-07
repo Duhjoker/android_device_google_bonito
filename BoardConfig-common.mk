@@ -15,6 +15,7 @@
 #
 
 include build/make/target/board/BoardConfigMainlineCommon.mk
+include build/make/target/board/BoardConfigPixelCommon.mk
 
 TARGET_BOARD_PLATFORM := sdm710
 TARGET_BOARD_INFO_FILE := device/google/bonito/board-info.txt
@@ -37,14 +38,14 @@ TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a75
 TARGET_BOARD_COMMON_PATH := device/google/bonito/sdm710
 
 BUILD_BROKEN_DUP_RULES := true
-
-# Hack for sdm845 display on R+ which started erroring.
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+BUILD_BROKEN_VENDOR_PROPERTY_NAMESPACE := true
 BUILD_BROKEN_USES_BUILD_COPY_HEADERS := true
 
-# Hack for Jelly on /product/
+# hack for jelly on /product'
 DISABLE_ARTIFACT_PATH_REQUIREMENTS := true
 
-# Hack for our vendor repo for now
+# hack for vendor repo for now
 BUILD_BROKEN_VINTF_PRODUCT_COPY_FILES := true
 
 BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200n8 androidboot.console=ttyMSM0 printk.devkmsg=on
@@ -114,8 +115,9 @@ BOARD_PERSISTIMAGE_FILE_SYSTEM_TYPE := ext4
 # boot.img
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x04000000
 
+
 # vendor.img
-BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_VENDORIMAGER_FILE_SYSTEM_TYPE := ext4
 
 BOARD_SUPER_PARTITION_GROUPS := google_dynamic_partitions
 BOARD_GOOGLE_DYNAMIC_PARTITIONS_PARTITION_LIST := \
@@ -214,9 +216,9 @@ TARGET_USES_COLOR_METADATA := true
 TARGET_USES_DRM_PP := true
 
 # Vendor Interface Manifest
-DEVICE_MANIFEST_FILE += device/google/bonito/manifest.xml
-DEVICE_MATRIX_FILE += device/google/bonito/compatibility_matrix.xml
-DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE += device/google/bonito/device_framework_matrix.xml
+DEVICE_MANIFEST_FILE := device/google/bonito/manifest.xml
+DEVICE_MATRIX_FILE := device/google/bonito/compatibility_matrix.xml
+DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := device/google/bonito/device_framework_matrix.xml
 
 # Userdebug only Vendor Interface Manifest
 ifneq (,$(filter userdebug eng, $(TARGET_BUILD_VARIANT)))
@@ -253,6 +255,10 @@ BOARD_VENDOR_KERNEL_MODULES += \
 else ifeq (,$(filter-out sargo_kernel_debug_memory bonito_kernel_debug_memory, $(TARGET_PRODUCT)))
 BOARD_VENDOR_KERNEL_MODULES += \
     $(wildcard device/google/bonito-kernel/debug_memory/*.ko)
+else ifeq (,$(filter-out sargo_kernel_debug_memory_accounting bonito_kernel_debug_memory_accounting, $(TARGET_PRODUCT)))
+BOARD_VENDOR_KERNEL_MODULES += \
+    $(wildcard device/google/bonito-kernel/debug_memory_acounting/*.ko)
+BOARD_KERNEL_CMDLINE += page_owner=on
 else ifeq (,$(filter-out sargo_kernel_debug_locking bonito_kernel_debug_locking, $(TARGET_PRODUCT)))
 BOARD_VENDOR_KERNEL_MODULES += \
     $(wildcard device/google/bonito-kernel/debug_locking/*.ko)
@@ -272,6 +278,8 @@ ifeq (,$(filter-out sargo_kasan bonito_kasan, $(TARGET_PRODUCT)))
 BOARD_PREBUILT_DTBIMAGE_DIR := device/google/bonito-kernel/kasan
 else ifeq (,$(filter-out sargo_kernel_debug_memory bonito_kernel_debug_memory, $(TARGET_PRODUCT)))
 BOARD_PREBUILT_DTBIMAGE_DIR := device/google/bonito-kernel/debug_memory
+else ifeq (,$(filter-out sargo_kernel_debug_memory_accounting bonito_kernel_debug_memory_accounting, $(TARGET_PRODUCT)))
+BOARD_PREBUILT_DTBIMAGE_DIR := device/google/bonito-kernel/debug_memory_accounting
 else ifeq (,$(filter-out sargo_kernel_debug_locking bonito_kernel_debug_locking, $(TARGET_PRODUCT)))
 BOARD_PREBUILT_DTBIMAGE_DIR := device/google/bonito-kernel/debug_locking
 else ifeq (,$(filter-out sargo_kernel_debug_hang bonito_kernel_debug_hang, $(TARGET_PRODUCT)))
